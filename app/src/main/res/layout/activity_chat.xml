@@ -1,30 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+    android:id="@+id/activity_chat"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:orientation="vertical"
-    tools:context="com.example.fatih.wirelesscomchat.MainActivity">
+    tools:context="com.example.fatih.wirelesscomchat.ChatActivity"
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bağlanılabilir cihazlar"
-        android:layout_marginBottom="8dp"/>
-    <ListView
-        android:id="@+id/device_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"></ListView>
+        android:text="Incoming text:"
+        android:padding="8dp"/>
+    <TextView
+        android:id="@+id/text_incoming"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/btn_discover"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Discover"/>
+        android:text="Your message:"
+        android:padding="8dp"/>
+    <EditText
+        android:id="@+id/text_send"
+        android:layout_width="match_parent"
+        android:layout_height="32dp" />
+
+    <Button
+        android:id="@+id/btn_send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SEND"/>
 
 </LinearLayout>
