@@ -21,7 +21,8 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements WifiP2pManager.PeerListListener, WifiP2pManager.ConnectionInfoListener {
+public class MainActivity extends AppCompatActivity implements WifiP2pManager.PeerListListener,
+        WifiP2pManager.ConnectionInfoListener{
 
     private final String TAG = this.getClass().toString();
 
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
                     // işlem yaparız.
                     @Override
                     public void onSuccess() {
+                        deviceListView.setAdapter(null);
                         /*Toast.makeText(getApplicationContext(), "Discovery is a success.",
                                 Toast.LENGTH_SHORT).show();*/
                         //startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
@@ -120,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
             }
             ArrayAdapter adapter = new ArrayAdapter(this,
                     android.R.layout.simple_list_item_1, deviceNames);
-
-
             deviceListView.setAdapter(adapter);
         }
     }
@@ -132,14 +132,13 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         final WifiP2pDevice toConnect = deviceList.get(position);
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = toConnect.deviceAddress;
+        config.groupOwnerIntent = 15;
         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
 
             // Bağlantı başarılı olursa chat ekranına geçiyoruz.
             @Override
             public void onSuccess() {
                 Log.i(TAG, "Successfully connectted to "+toConnect.deviceName);
-                Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
-                MainActivity.this.startActivity(chatIntent);
             }
 
             // Bağlantı kurulamazsa hata kodu burada yazdırılır.
@@ -151,13 +150,20 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
     }
 
-    // Burası daha bitmedi. Deneysel takılıyoruz.
     @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo info) {
-        if (info.isGroupOwner) {
-            Log.i(TAG, "I am the group owner");
+    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+        if (wifiP2pInfo.isGroupOwner == true){
+            Toast.makeText(getApplicationContext(), "Yay I am the owner!!", Toast.LENGTH_LONG).show();
+            Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+            chatIntent.putExtra("Owner?",true); //Grup sahibi benim!
+            MainActivity.this.startActivity(chatIntent);
         } else {
-            Log.i(TAG, "Group owner address" + info.groupOwnerAddress.getHostAddress());
+            Toast.makeText(getApplicationContext(), "The owner is: "+
+                    wifiP2pInfo.groupOwnerAddress.getHostAddress(), Toast.LENGTH_LONG).show();
+            Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+            chatIntent.putExtra("Owner?",false); //Grup sahibi diğer cihaz :(
+            chatIntent.putExtra("Owner Address", wifiP2pInfo.groupOwnerAddress.getHostAddress());
+            MainActivity.this.startActivity(chatIntent);
         }
     }
 }

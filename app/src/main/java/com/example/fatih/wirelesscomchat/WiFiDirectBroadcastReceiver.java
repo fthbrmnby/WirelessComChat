@@ -23,7 +23,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = activity;
-
     }
 
     // Wifi durumunun değişikliği durumunda fire edilen trigger'ları burada catch ediyoruz ve gerekli
@@ -50,14 +49,18 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (mManager != null) {
                 mManager.requestPeers(mChannel, mActivity);
             }
-
             // Bağlantı işlemlerinde değişiklik olduğunda ( bir cihaza bağlanma ya da bağlantının
             // kopması durumunda) fire edilen trigger.
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+            if (mManager == null) {
+                return;
+            }
+
             NetworkInfo networkInfo = (NetworkInfo) intent
                     .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
             if (networkInfo.isConnected()) {
+
                 // we are connected with the other device, request connection
                 // info to find group owner IP
                 mManager.requestConnectionInfo(mChannel, mActivity);
@@ -66,5 +69,4 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             }
         }
     }
-
 }
