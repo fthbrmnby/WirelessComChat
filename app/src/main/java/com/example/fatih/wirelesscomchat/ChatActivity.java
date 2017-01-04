@@ -49,6 +49,10 @@ public class ChatActivity extends AppCompatActivity {
 
         updateConversationHandler = new Handler();
 
+        // Main activity'den gelen owner bilgisi kontrol edilir. Eğer owner biz isek o zaman bizim
+        // cihazımızda bir server socket'i açılır, eğer başka bir cihaz group owner'sa o zaman bir
+        //client socket'i açılır ve server socket'ine bağlanılır. Daha sonra bu socket üzerinden
+        // server olan cihaza text gönderilir.
         if (owner) {
             this.serverThread = new Thread(new ServerThread());
             this.serverThread.start();
@@ -56,6 +60,7 @@ public class ChatActivity extends AppCompatActivity {
             new Thread(new ClientThread()).start();
         }
 
+        // Send butonuna bastığımızda text'i server'a gönderir.
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -86,17 +91,20 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    // Cihazımız group owner ise server socket'i açılır ve gelen datalar okunur.
     class ServerThread implements Runnable {
         @Override
         public void run() {
             Socket socket = null;
             try {
+                // 6000 numaralı portu kullanan bir socket aç.
                 serverSocket = new ServerSocket(SERVERPORT);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    // Server socket'ini dinlemeye aç
                     socket = serverSocket.accept();
                     CommunicationThread commThread = new CommunicationThread(socket);
                     new Thread(commThread).start();
@@ -107,6 +115,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    // Client'tan gelen datayı okumayı yapan sınıf.
     class CommunicationThread implements Runnable {
         private Socket clientSocket;
         private BufferedReader input;
@@ -114,6 +123,7 @@ public class ChatActivity extends AppCompatActivity {
         public CommunicationThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
             try {
+                // client socket'inden gelen datayı oku.
                 this.input = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -132,7 +142,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     }
-
+    // Gelen mesajı ekrana yazdırmak için kullanılan sınıf.
     class UpdateUIThread implements Runnable {
         private String msg;
 
@@ -140,12 +150,14 @@ public class ChatActivity extends AppCompatActivity {
             this.msg = str;
         }
 
+        // Gelen mesajı ekrana yazdır.
         @Override
         public void run() {
             receivedText.setText(receivedText.getText().toString() + "Gelen Mesaj: " + msg + "\n");
         }
     }
 
+    // Eğer client isek server'a bağlanmayı yapan sınıf.
     class ClientThread implements Runnable {
         @Override
         public void run() {

@@ -150,8 +150,13 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
     }
 
+
+    // Bir cihaza bağlandığımızda bağlantı bilgilerini almak için kullanılan metot.
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+        // Bağlantı kurulduğunda hangi cihaz group owner oldu kontrol ediliyor. Eğer grup sahibi biz
+        // isek grup sahibinin biz olduğunu chat ekranına gönderip, ana ekrandan chat ekranına geçiyoruz.
+        // Eğer diğer cihaz grup owner ise group owner'ının adresini chat ekranına göndeririz.
         if (wifiP2pInfo.isGroupOwner == true){
             Toast.makeText(getApplicationContext(), "Yay I am the owner!!", Toast.LENGTH_LONG).show();
             Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
