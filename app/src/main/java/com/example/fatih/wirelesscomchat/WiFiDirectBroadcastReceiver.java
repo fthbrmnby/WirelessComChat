@@ -25,13 +25,12 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         this.mActivity = activity;
     }
 
-    // Wifi durumunun değişikliği durumunda fire edilen trigger'ları burada catch ediyoruz ve gerekli
-    // işlemleri uyguluyoruz.
+    // Handle wifi statuses here
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        // Wifi açık mı kapalı mı burada kontrol edilebiliyor.
+        // Wifi enabled or disabled?
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
@@ -39,18 +38,12 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             } else {
                 Log.i(LOG_TAG, "Wifi Direct is not enabled");
             }
-
-            // Elimizdeki arama sonucunda bir değişiklik olduğunda (yeni cihaz bulunması ya da
-            // varolan bir cihaza artık ulaşamama gibi) fire edilen trigger.
+        // Handle device status changes (a new device is available, an existing device is no longer available etc.)
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            // Arama sonucunda bulunan cihazlar wifi p2p manager üzerinden alınır.
-            // Bu metot asenkron bir çağrı ile PeerListListener.onPeersAvailable()
-            // metodunu da çağırır.
             if (mManager != null) {
                 mManager.requestPeers(mChannel, mActivity);
             }
-            // Bağlantı işlemlerinde değişiklik olduğunda ( bir cihaza bağlanma ya da bağlantının
-            // kopması durumunda) fire edilen trigger.
+        // Handle connection status changes (connecting to a new device, losing an existing connection etc.)
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             if (mManager == null) {
                 return;
