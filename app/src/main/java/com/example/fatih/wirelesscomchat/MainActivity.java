@@ -55,16 +55,12 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
         Button btn_discover = (Button) findViewById(R.id.btn_discover);
 
-        //Wifi direct kullanarak cihaz araması yapabiliyor muyuz?
+        // Check if we can scan for devices
         btn_discover.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-
-                    // Eğer discover tuşuna bastığımızda yakınlardaki cihazları başarıyla
-                    // arayabiliyorsak onSuccess() metodu çalışır. Ancak bu metot içerisinde bir
-                    // işlem yapmayız. Çünkü WifiDirectBroadcastReceiver içerindeki trigger'da
-                    // işlem yaparız.
+                mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {    
+                    // Yep, we can scan for devices
                     @Override
                     public void onSuccess() {
                         deviceListView.setAdapter(null);
@@ -73,8 +69,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
                         //startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
                     }
 
-                    // Eğer cihaz araması yapılamazsa buradan hata mesajı ve hatanın nedenini ekrana
-                    // yazdırabiliriz.
+                    // Nope, can't scan for devices
                     @Override
                     public void onFailure(int reasonCode) {
                         Toast.makeText(getApplicationContext(), "Discovery is a failure " + reasonCode,
@@ -84,8 +79,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
             }
         });
 
-        // Cihaz listesinde seçilen cihazı kontrol edip o cihaza bağlanmak için gerekli
-        // metodu çağırıyoruz.
+        // Connect to selected device
         deviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -94,25 +88,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         });
     }
 
-    // Uygulama minimize edilip tekrar açıldığında trigger'ları intent'e bağlıyoruz.
     @Override
     protected void onResume() {
         super.onResume();
         registerReceiver(mReceiver, mIntentFilter);
     }
 
-    // Uygulama minimize edildiğinde kaynakları kullanmaya devam etmemesi için trigger'ları unbound
-    // ediyoruz.
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
     }
-
-
-    // Discover tuşuna basıldığında eğer yakınlarda cihaz bulunursa bulunan cihazları ekranda
-    // gösterebilmek için WifiP2pDeviceList'i ArrayList'e çeviriyoruz. Daha sonra bu ArrayList
-    // içerindeki cihazlar ekrana liste olarak yazdırılır.
+                
+    // Get device names after the scan and list them on the screen
     @Override
     public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
         if (wifiP2pDeviceList.getDeviceList().size() > 0) {
@@ -126,22 +114,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
         }
     }
 
-    // Bulunan cihazlar listesinden seçilen cihazın bilgileri elimizde varolan deviceList'den alınır
-    // ve bu cihazın konfigurasyon bilgileri kullanılarak cihaza bağlanılır.
+    // Connect to the selected device
     void connectToDevice(int position) {
         final WifiP2pDevice toConnect = deviceList.get(position);
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = toConnect.deviceAddress;
         config.groupOwnerIntent = 15;
         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-
-            // Bağlantı başarılı olursa chat ekranına geçiyoruz.
+                
             @Override
             public void onSuccess() {
                 Log.i(TAG, "Successfully connectted to "+toConnect.deviceName);
             }
 
-            // Bağlantı kurulamazsa hata kodu burada yazdırılır.
             @Override
             public void onFailure(int reason) {
                Log.i(TAG, "Error while connecting to device. Reason code: "+reason);
@@ -150,23 +135,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
     }
 
-
-    // Bir cihaza bağlandığımızda bağlantı bilgilerini almak için kullanılan metot.
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-        // Bağlantı kurulduğunda hangi cihaz group owner oldu kontrol ediliyor. Eğer grup sahibi biz
-        // isek grup sahibinin biz olduğunu chat ekranına gönderip, ana ekrandan chat ekranına geçiyoruz.
-        // Eğer diğer cihaz grup owner ise group owner'ının adresini chat ekranına göndeririz.
+        // move owner info from main screen to the chat screen
         if (wifiP2pInfo.isGroupOwner == true){
             Toast.makeText(getApplicationContext(), "Yay I am the owner!!", Toast.LENGTH_LONG).show();
             Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
-            chatIntent.putExtra("Owner?",true); //Grup sahibi benim!
+            chatIntent.putExtra("Owner?",true);
             MainActivity.this.startActivity(chatIntent);
         } else {
             Toast.makeText(getApplicationContext(), "The owner is: "+
                     wifiP2pInfo.groupOwnerAddress.getHostAddress(), Toast.LENGTH_LONG).show();
             Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
-            chatIntent.putExtra("Owner?",false); //Grup sahibi diğer cihaz :(
+            chatIntent.putExtra("Owner?",false);
             chatIntent.putExtra("Owner Address", wifiP2pInfo.groupOwnerAddress.getHostAddress());
             MainActivity.this.startActivity(chatIntent);
         }
